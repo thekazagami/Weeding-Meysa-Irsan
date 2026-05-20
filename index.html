@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
 <title>Meyssa & Irsan — 19 Juli 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#E8607A">
@@ -164,7 +165,7 @@ body.ready{overflow-y:auto;}
 @keyframes pulse-hint{0%,100%{opacity:.4;}50%{opacity:1;}}
 .epart{position:fixed;pointer-events:none;z-index:10001;opacity:0;animation:efly var(--d,1s) ease var(--dl,0s) forwards;}
 @keyframes efly{0%{opacity:1;transform:translate(0,0) scale(.5);}100%{opacity:0;transform:translate(var(--ex),var(--ey)) scale(1.4) rotate(var(--er));}}
-.cine-bar{position:fixed;left:0;right:0;height:0;background:#000;z-index:9999;transition:height .6s ease;}
+.cine-bar{position:fixed;left:0;right:0;height:0;background:#000;z-index:9999;transition:height .6s ease;pointer-events:none;}
 #cine-top{top:0;} #cine-bot{bottom:0;}
 .cine-bar.show{height:70px;}
 
@@ -496,6 +497,80 @@ section:hover .sec-bg{opacity:.09;}
   html{scroll-snap-type:y proximity;}
   section{scroll-snap-align:start;}
 }
+
+/* ══ EXTRA MOBILE CSS ══ */
+/* Prevent text select on tap */
+* { -webkit-touch-callout:none; }
+input,textarea,select { -webkit-touch-callout:default; user-select:text; }
+/* Smooth momentum scroll */
+body.ready { -webkit-overflow-scrolling:touch; }
+/* Prevent zoom on input focus (iOS) */
+input,select,textarea { font-size:16px !important; }
+/* Back to top button */
+#back-top{
+  position:fixed;bottom:80px;right:24px;z-index:996;
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,var(--rose),var(--purple));
+  border:none;color:white;font-size:18px;cursor:pointer;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .3s;
+  box-shadow:0 4px 16px rgba(232,96,122,.4);
+}
+#back-top.show{opacity:1;pointer-events:auto;}
+#back-top:active{transform:scale(.9);}
+/* Long press save hint */
+.mi::before{
+  content:'Tahan untuk simpan';
+  position:absolute;top:6px;left:50%;transform:translateX(-50%);
+  background:rgba(20,5,40,.75);color:white;
+  font-size:9px;letter-spacing:.08em;padding:3px 8px;
+  border-radius:999px;white-space:nowrap;
+  opacity:0;transition:opacity .3s;z-index:3;pointer-events:none;
+}
+.mi.longpress::before{opacity:1;}
+/* Double-tap heart */
+.dbl-heart{
+  position:fixed;pointer-events:none;z-index:99999;
+  font-size:40px;opacity:0;
+  animation:dbl-pop .8s ease forwards;
+}
+@keyframes dbl-pop{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.3);}
+  40%{opacity:1;transform:translate(-50%,-50%) scale(1.3);}
+  70%{opacity:1;transform:translate(-50%,-80%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-120%) scale(.7);}
+}
+/* Install banner */
+#install-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:990;
+  background:white;border-top:1px solid var(--blush);
+  padding:10px 16px;display:none;
+  align-items:center;gap:10px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.1);
+}
+#install-banner .ib-icon{font-size:28px;}
+#install-banner .ib-text{flex:1;}
+#install-banner .ib-title{font-size:13px;font-weight:500;color:var(--deep);}
+#install-banner .ib-sub{font-size:11px;color:var(--muted);}
+#install-banner .ib-btn{
+  padding:8px 16px;background:var(--rose);color:white;
+  border:none;border-radius:999px;font-size:12px;cursor:pointer;
+}
+#install-banner .ib-close{
+  background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;padding:4px;
+}
+/* Ripple button effect */
+.rbtn{position:relative;overflow:hidden;}
+.rbtn::after{
+  content:'';position:absolute;inset:0;
+  background:rgba(255,255,255,.3);
+  transform:scale(0);border-radius:50%;
+  animation:rbtn-ripple .5s ease forwards;
+  pointer-events:none;display:none;
+}
+.rbtn.rplaying::after{display:block;}
+@keyframes rbtn-ripple{to{transform:scale(2.5);opacity:0;}}
+
 </style>
 
 <!-- CINEMATIC BARS -->
@@ -505,7 +580,7 @@ section:hover .sec-bg{opacity:.09;}
 <!-- ENVELOPE -->
 <div id="env">
   <p class="env-title"><span class="r">Meyssa Ayu Amelia</span><br>&amp;<br><span class="p">Irsan Alfandi</span></p>
-  <div class="env-wrap" onclick="openEnv()">
+  <div class="env-wrap" onclick="openEnv()" ontouchend="if(!envDone){openEnv();}" style="-webkit-tap-highlight-color:transparent;user-select:none;">
     <div class="env-body">
       <div class="env-stripe"></div>
       <div class="env-flap" id="eflap"></div>
@@ -521,12 +596,30 @@ section:hover .sec-bg{opacity:.09;}
   <button class="ctrl-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle tema">🌙</button>
   <button class="ctrl-btn" id="lang-btn" onclick="toggleLang()" title="Toggle bahasa">🇮🇩</button>
 </div>
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'});haptic('light')">↑</button>
 <div id="fnav"></div>
 <div id="sbar"></div>
 <div id="mnote">🎵 Lagu Nikah — Juicy Luicy</div>
 <button id="mbtn" onclick="toggleMusic()"><svg id="mic-ico" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z"/></svg></button>
-<div id="yt" style="display:none;"></div>
+<iframe id="yt-frame"
+  src="about:blank"
+  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+  allowfullscreen
+  style="position:fixed;left:-9999px;top:-9999px;width:2px;height:2px;border:0;opacity:0.01;pointer-events:none;"
+></iframe>
 <div id="cursor"></div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="install-banner">
+  <div class="ib-icon">💍</div>
+  <div class="ib-text">
+    <div class="ib-title">Simpan Undangan</div>
+    <div class="ib-sub">Tambahkan ke layar utama HP</div>
+  </div>
+  <button class="ib-btn" onclick="installPWA()">Simpan</button>
+  <button class="ib-close" onclick="document.getElementById('install-banner').style.display='none'">✕</button>
+</div>
+
 <div class="petal-wrap" id="ptls"></div>
 
 <!-- ══ 1. COVER ══ -->
@@ -1011,17 +1104,25 @@ function openEnv(){
   // Letter rises
   setTimeout(()=>document.getElementById('eletter').classList.add('rising'),700);
   // Emoji explosion
-  setTimeout(()=>{
+  setTimeout(()=>{try{
     const cx=window.innerWidth/2,cy=window.innerHeight/2;
     for(let i=0;i<50;i++){
       const el=document.createElement('div');el.className='epart';
       el.textContent=EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
       const ang=Math.random()*Math.PI*2,dist=100+Math.random()*300;
-      el.style.cssText=`left:${cx}px;top:${cy}px;font-size:${16+Math.random()*20}px;--ex:${Math.cos(ang)*dist}px;--ey:${Math.sin(ang)*dist}px;--er:${(Math.random()-.5)*400}deg;--d:${.8+Math.random()*1.1}s;--dl:${i*.03}s;`;
+      el.style.position='fixed';
+      el.style.left=cx+'px'; el.style.top=cy+'px';
+      el.style.fontSize=(16+Math.random()*20)+'px';
+      el.style.pointerEvents='none'; el.style.zIndex='10001';
+      el.style.setProperty('--ex',(Math.cos(ang)*dist)+'px');
+      el.style.setProperty('--ey',(Math.sin(ang)*dist)+'px');
+      el.style.setProperty('--er',((Math.random()-.5)*400)+'deg');
+      el.style.setProperty('--d',(.8+Math.random()*1.1)+'s');
+      el.style.setProperty('--dl',(i*.03)+'s');
       document.body.appendChild(el);
       setTimeout(()=>el.remove(),(1.2+i*.03)*1000+600);
     }
-  },800);
+  }catch(e){}},800);
   // Start music
   startMusic();
   // Remove cinematic + show invitation
@@ -1177,6 +1278,8 @@ const fnavEl=document.getElementById('fnav');
 navSecs.forEach((id,i)=>{
   const d=document.createElement('div');d.className='fnd';d.title=id;
   d.onclick=()=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
+function navTo(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});}
+
   fnavEl.appendChild(d);
 });
 const navDots=document.querySelectorAll('.fnd');
@@ -1198,30 +1301,48 @@ window.addEventListener('scroll',()=>{
 const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}});},{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-/* ══ YOUTUBE MUSIC ══ */
-let mOn=false,ytp=null;
-const ytag=document.createElement('script');
-ytag.src='https://www.youtube.com/iframe_api';
-document.head.appendChild(ytag);
-function onYouTubeIframeAPIReady(){
-  ytp=new YT.Player('yt',{height:'1',width:'1',videoId:'WNw2yH_waVc',
-    playerVars:{autoplay:0,loop:1,playlist:'WNw2yH_waVc'},
-    events:{onStateChange:function(e){
-      if(e.data===YT.PlayerState.PLAYING){
-        mOn=true;document.getElementById('mbtn').classList.add('on');
-        document.getElementById('mic-ico').style.opacity='1';
-        const mn=document.getElementById('mnote');mn.style.display='block';
-        setTimeout(()=>mn.style.display='none',3500);
-      } else if(e.data===YT.PlayerState.PAUSED){
-        mOn=false;document.getElementById('mbtn').classList.remove('on');
-        document.getElementById('mic-ico').style.opacity='.4';
-      }
-    }}
-  });
-}
+/* ══ BACKSOUND: Pre-rendered iframe src-swap ══ */
+const MUSIC_ID = 'WNw2yH_waVc';
+let musicOn = false;
+let musicStarted = false;
+
 function startMusic(){
-  if(!ytp||typeof ytp.playVideo!=='function'){setTimeout(startMusic,400);return;}
-  ytp.setVolume(60);ytp.playVideo();
+  var fr=document.getElementById('yt-frame');
+  if(!fr||musicStarted)return;
+  musicStarted=true;
+  // Tanpa sandbox, autoplay=1 + mute=0 berjalan saat user gesture
+  fr.src='https://www.youtube.com/embed/'+MUSIC_ID
+    +'?autoplay=1&mute=0&loop=1&playlist='+MUSIC_ID
+    +'&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&origin='+encodeURIComponent(location.origin);
+  musicOn=true;
+  var btn=document.getElementById('mbtn');
+  if(btn)btn.classList.add('on');
+  var ico=document.getElementById('mic-ico');
+  if(ico)ico.style.opacity='1';
+  var mn=document.getElementById('mnote');
+  if(mn){mn.style.display='block';setTimeout(function(){mn.style.display='none';},3500);}
+}
+
+function toggleMusic(){
+  var fr=document.getElementById('yt-frame');
+  if(!fr) return;
+  if(!musicStarted){ startMusic(); return; }
+  if(musicOn){
+    fr.dataset.src=fr.src;
+    fr.src='about:blank';
+    musicOn=false;
+    var btn=document.getElementById('mbtn');
+    if(btn) btn.classList.remove('on');
+    var ico=document.getElementById('mic-ico');
+    if(ico) ico.style.opacity='0.4';
+  } else {
+    fr.src=fr.dataset.src||('https://www.youtube.com/embed/'+MUSIC_ID+'?autoplay=1&loop=1&playlist='+MUSIC_ID+'&controls=0');
+    musicOn=true;
+    var btn=document.getElementById('mbtn');
+    if(btn) btn.classList.add('on');
+    var ico=document.getElementById('mic-ico');
+    if(ico) ico.style.opacity='1';
+  }
 }
 function toggleMusic(){
   if(!ytp||typeof ytp.playVideo!=='function')return;
@@ -1362,13 +1483,12 @@ function haptic(t){
 
 /* ══ NATIVE SHARE API ══ */
 async function nativeShare(){
-  var g=typeof guestName!=='undefined'&&guestName?'Halo '+decodeURIComponent(guestName)+', ':'';
-  var shareData={title:'Undangan Pernikahan Meyssa & Irsan',text:g+'Kami mengundang kamu ke pernikahan kami 🎊
-Meyssa Ayu Amelia & Irsan Alfandi
-📅 19 Juli 2026 · Binjai',url:window.location.href};
+  var g=(typeof guestName!=='undefined'&&guestName)?('Halo '+decodeURIComponent(guestName)+', '):'';
+  var txt=g+'Kami mengundang kamu ke pernikahan kami - Meyssa Ayu Amelia dan Irsan Alfandi - 19 Juli 2026 - Binjai, Sumatera Utara';
+  var shareData={title:'Undangan Pernikahan Meyssa & Irsan',text:txt,url:window.location.href};
   haptic('medium');
   if(navigator.share){try{await navigator.share(shareData);return;}catch(e){}}
-  window.open('https://wa.me/?text='+encodeURIComponent(shareData.text),'_blank');
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 
 /* ══ SCREEN WAKE LOCK ══ */
@@ -1381,6 +1501,110 @@ window.addEventListener('load',reqWakeLock);
 
 /* ══ OVERRIDE shareWA with nativeShare ══ */
 function shareWA(){nativeShare();}
+</script>
+
+
+<script>
+/* ══ BACK TO TOP ══ */
+window.addEventListener('scroll',function(){
+  var btn=document.getElementById('back-top');
+  if(btn) btn.classList.toggle('show', window.scrollY > 500);
+},{passive:true});
+
+/* ══ DOUBLE TAP HEART ══ */
+(function(){
+  var last={t:0,x:0,y:0};
+  document.addEventListener('touchend',function(e){
+    var now=Date.now(),t=e.changedTouches[0];
+    if(now-last.t<350 && Math.abs(t.clientX-last.x)<40 && Math.abs(t.clientY-last.y)<40){
+      var h=document.createElement('div');
+      h.className='dbl-heart';
+      h.textContent='❤️';
+      h.style.left=t.clientX+'px';
+      h.style.top=t.clientY+'px';
+      document.body.appendChild(h);
+      try{navigator.vibrate(40);}catch(e){}
+      h.addEventListener('animationend',function(){h.remove();});
+    }
+    last.t=now; last.x=t.clientX; last.y=t.clientY;
+  },{passive:true});
+})();
+
+/* ══ LONG PRESS PHOTO TO SAVE ══ */
+(function(){
+  var lpt=null, lpi=null;
+  document.addEventListener('touchstart',function(e){
+    var mi=e.target.closest('.mi');
+    if(!mi)return;
+    lpi=mi;
+    lpt=setTimeout(function(){
+      mi.classList.add('longpress');
+      try{navigator.vibrate([40,20,80]);}catch(e){}
+      var img=mi.querySelector('img');
+      if(img){
+        var a=document.createElement('a');
+        a.href=img.src; a.download='meyssa-irsan-prewedding.jpg';
+        a.click();
+      }
+      setTimeout(function(){mi.classList.remove('longpress');},1500);
+    },600);
+  },{passive:true});
+  document.addEventListener('touchend',function(){
+    clearTimeout(lpt);
+    if(lpi)setTimeout(function(){lpi&&lpi.classList.remove('longpress');},300);
+  },{passive:true});
+  document.addEventListener('touchmove',function(){clearTimeout(lpt);},{passive:true});
+})();
+
+/* ══ ORIENTATION CHANGE ══ */
+window.addEventListener('orientationchange',function(){
+  setTimeout(function(){
+    var bg=document.getElementById('cvbg');
+    if(bg) bg.style.transform='scale(1.06)';
+    var cv=document.getElementById('constellation');
+    if(cv){cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;}
+  },400);
+});
+
+/* ══ PREVENT ZOOM ON INPUT FOCUS (iOS) ══ */
+document.addEventListener('touchstart',function(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT'){
+    e.target.style.fontSize='16px';
+  }
+},{passive:true});
+
+/* ══ PWA INSTALL PROMPT ══ */
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();
+  deferredPrompt=e;
+  var banner=document.getElementById('install-banner');
+  if(banner) banner.style.display='flex';
+});
+function installPWA(){
+  var banner=document.getElementById('install-banner');
+  if(banner) banner.style.display='none';
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(){deferredPrompt=null;});
+  }
+}
+window.addEventListener('appinstalled',function(){
+  var banner=document.getElementById('install-banner');
+  if(banner) banner.style.display='none';
+});
+
+/* ══ SMOOTH SCROLL RESTORATION ══ */
+if('scrollRestoration' in history) history.scrollRestoration='manual';
+
+/* ══ BATTERY-AWARE PETAL REDUCTION ══ */
+if(navigator.getBattery){
+  navigator.getBattery().then(function(b){
+    if(b.level<0.2){
+      document.querySelectorAll('.petal').forEach(function(p,i){if(i>8)p.remove();});
+    }
+  }).catch(function(){});
+}
 </script>
 
 </body>
