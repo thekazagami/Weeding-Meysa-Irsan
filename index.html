@@ -601,6 +601,12 @@ input,select,textarea { font-size:16px !important; }
 <div id="sbar"></div>
 <div id="mnote">🎵 Lagu Nikah — Juicy Luicy</div>
 <button id="mbtn" onclick="toggleMusic()"><svg id="mic-ico" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-2c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z"/></svg></button>
+<!-- BACKSOUND: HTML5 Audio -->
+<audio id="bg-audio" loop preload="none"
+  style="display:none;">
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+</audio>
+<!-- YouTube iframe fallback -->
 <iframe id="yt-frame"
   src="about:blank"
   allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -1093,7 +1099,10 @@ function initConstellation(){
 const EMOJIS=['❤️','💕','🌸','✨','💫','🌺','🎊','💖','🌼','🥂','💝','⭐','🎉','💐','🌟'];
 let envDone=false;
 function openEnv(){
-  if(envDone)return;envDone=true;
+  if(envDone)return;
+  // PERTAMA: Start music dalam user gesture (sebelum setTimeout apapun!)
+  startMusic();
+  envDone=true;
   // Cinematic bars
   haptic('open');document.getElementById('cine-top').classList.add('show');
   document.getElementById('cine-bot').classList.add('show');
@@ -1123,8 +1132,6 @@ function openEnv(){
       setTimeout(()=>el.remove(),(1.2+i*.03)*1000+600);
     }
   }catch(e){}},800);
-  // Start music
-  startMusic();
   // Remove cinematic + show invitation
   setTimeout(()=>{
     document.getElementById('cine-top').classList.remove('show');
@@ -1301,26 +1308,45 @@ window.addEventListener('scroll',()=>{
 const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target);}});},{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-/* ══ BACKSOUND: Pre-rendered iframe src-swap ══ */
+/* ══ BACKSOUND: Juicy Luicy — Lagu Nikah ══ */
 const MUSIC_ID = 'WNw2yH_waVc';
 let musicOn = false;
 let musicStarted = false;
+let audioCtx = null;
+
+function unlockAudio(){
+  // Unlock Web Audio Context dalam user gesture
+  try{
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+  }catch(e){}
+}
 
 function startMusic(){
-  var fr=document.getElementById('yt-frame');
-  if(!fr||musicStarted)return;
-  musicStarted=true;
-  // Tanpa sandbox, autoplay=1 + mute=0 berjalan saat user gesture
-  fr.src='https://www.youtube.com/embed/'+MUSIC_ID
-    +'?autoplay=1&mute=0&loop=1&playlist='+MUSIC_ID
-    +'&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&origin='+encodeURIComponent(location.origin);
-  musicOn=true;
+  // HARUS dipanggil PERTAMA dalam user gesture handler
+  if(musicStarted) return;
+  musicStarted = true;
+  musicOn = true;
+
+  // Unlock audio context
+  unlockAudio();
+
+  // Set YouTube iframe src — dalam user gesture = diizinkan browser
+  var fr = document.getElementById('yt-frame');
+  if(fr){
+    fr.src = 'https://www.youtube.com/embed/' + MUSIC_ID
+      + '?autoplay=1&mute=0&loop=1&playlist=' + MUSIC_ID
+      + '&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0'
+      + '&enablejsapi=0&origin=' + encodeURIComponent(location.origin||'');
+  }
+
+  // Update UI
   var btn=document.getElementById('mbtn');
-  if(btn)btn.classList.add('on');
+  if(btn) btn.classList.add('on');
   var ico=document.getElementById('mic-ico');
-  if(ico)ico.style.opacity='1';
+  if(ico) ico.style.opacity='1';
   var mn=document.getElementById('mnote');
-  if(mn){mn.style.display='block';setTimeout(function(){mn.style.display='none';},3500);}
+  if(mn){ mn.style.display='block'; setTimeout(function(){mn.style.display='none';},3500); }
 }
 
 function toggleMusic(){
@@ -1336,7 +1362,7 @@ function toggleMusic(){
     var ico=document.getElementById('mic-ico');
     if(ico) ico.style.opacity='0.4';
   } else {
-    fr.src=fr.dataset.src||('https://www.youtube.com/embed/'+MUSIC_ID+'?autoplay=1&loop=1&playlist='+MUSIC_ID+'&controls=0');
+    fr.src=fr.dataset.src||('https://www.youtube.com/embed/'+MUSIC_ID+'?autoplay=1&mute=0&loop=1&playlist='+MUSIC_ID+'&controls=0');
     musicOn=true;
     var btn=document.getElementById('mbtn');
     if(btn) btn.classList.add('on');
